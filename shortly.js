@@ -2,7 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var bcrypt = require('bcrypt-nodejs');
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -23,7 +24,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/',
+app.use(session({
+  secret: 'Whatapieceofworkismanhownobleinreasonhowinfiniteinfacultiyinformandmovementhowexpressandadmirable',
+  resave: false,
+  saveUnitialized: true
+}))
+
+app.get('/', util.checkSession,
 function(req, res) {
   res.render('index');
 });
@@ -33,17 +40,25 @@ function(req, res) {
   res.render('login');
 });
 
+app.get('/logout',
+function(req, res) {
+  req.session.destroy(function(err) {
+    if (err) throw err
+  })
+  res.redirect("/login");
+})
+
 app.get('/signup',
 function(req, res) {
   res.render('signup');
 });
 
-app.get('/create',
+app.get('/create', util.checkSession,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/links',
+app.get('/links', util.checkSession,
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
@@ -51,7 +66,7 @@ function(req, res) {
 });
 
 
-app.post('/links',
+app.post('/links', util.checkSession,
 function(req, res) {
   var uri = req.body.url;
 
@@ -87,14 +102,34 @@ function(req, res) {
 
 app.post('/login',
 function(req,res){
-  new User({
-    username: req.body.username,
-    password: req.body.password
-    }).fetch().then(function(found) {
+  var userLogin = new User({
+    username: req.body.username
+    })
+  userLogin.fetch().then(function(found) {
     if (found) {
-      console.log('found : ' + found)
+      console.log(req.body.password)
+      console.log(found.get('password'))
+      bcrypt.compare(req.body.password, found.get('password'), function(err, result) {
+        if (err) throw err
+        if(result) {
+          util.createSession(req, res, found)
+        } else {
+          console.log('password is incorrect')
+          res.redirect('/login')
+        }
+
+          // if (result) {
+          //   var key = util.APIKeyGen()
+          //   new Session({
+          //     userid : found.get('id'),
+          //     apitoken : key
+          //   }).save().then(
+          //     res.send(201, {apiKey : key})
+          //   )
+
+      })
     } else {
-      console.log('not found')
+      console.log('user not found')
       res.redirect('/login')
     }
   })
@@ -106,12 +141,12 @@ function(req,res) {
     username: req.body.username,
     password: req.body.password
     })
+  console.log(user)
   user.save().then(function(newUser) {
     Users.add(newUser);
     return res.redirect('/login');
   })
 })
-
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/

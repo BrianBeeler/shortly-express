@@ -9,7 +9,14 @@
       <input id="password" type="password" name="password">
     </div>
     <div>
-      <input type="submit" value="Login">
+      <input type="submit" value="Login" id='login_button'>
+      <script>$(#login_button).on('click', function(e){
+        e.preventDefault()
+        $.post('/login', {}).then(function(apikey){
+        window.App.apikey = apikey.apikey
+        })
+      })
+      </script>
     </div>
 </form>
 <p>

@@ -15,13 +15,25 @@ var User = db.Model.extend({
       //   model.set('username', results)
       //   console.log('username is ' + model.get('username'))
       // })
-      // bcrypt.hashSync(password, null, null, function(err, results){
+      // bcrypt.hash(password, null, null, function(err, results){
       //   model.set('password', results)
       //   console.log('password is ' + model.get('password'))
       // })
         model.set('password', bcrypt.hashSync(password))
       })
-    }
+    },
+  // checkPassword: function(password, hashPass){
+  //   bcrypt.compare(password, hashPass, function(error, result){
+  //     if (error) {
+  //       return error;
+  //     } else {
+  //       return result;
+  //     }
+  //   })
+  // },
+  // alertme: function() {
+  //   console.log('alert')
+  // }
 });
 
 module.exports = User;
