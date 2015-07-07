@@ -11,14 +11,17 @@ var User = db.Model.extend({
       var username = model.get('username')
       var password = model.get('password')
 
-      bcrypt.hash(username, null, null, function(err, results){
-        model.set('username', results)
+      // bcrypt.hash(username, null, null, function(err, results){
+      //   model.set('username', results)
+      //   console.log('username is ' + model.get('username'))
+      // })
+      // bcrypt.hashSync(password, null, null, function(err, results){
+      //   model.set('password', results)
+      //   console.log('password is ' + model.get('password'))
+      // })
+        model.set('password', bcrypt.hashSync(password))
       })
-      bcrypt.hash(password, null, null, function(err, results){
-        model.set('password', results)
-      })
-    })
-  }
+    }
 });
 
 module.exports = User;

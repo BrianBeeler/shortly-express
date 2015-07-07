@@ -50,6 +50,7 @@ function(req, res) {
   });
 });
 
+
 app.post('/links',
 function(req, res) {
   var uri = req.body.url;
@@ -83,6 +84,33 @@ function(req, res) {
     }
   });
 });
+
+app.post('/login',
+function(req,res){
+  new User({
+    username: req.body.username,
+    password: req.body.password
+    }).fetch().then(function(found) {
+    if (found) {
+      console.log('found : ' + found)
+    } else {
+      console.log('not found')
+      res.redirect('/login')
+    }
+  })
+})
+
+app.post('/signup',
+function(req,res) {
+  var user = new User({
+    username: req.body.username,
+    password: req.body.password
+    })
+  user.save().then(function(newUser) {
+    Users.add(newUser);
+    return res.redirect('/login');
+  })
+})
 
 /************************************************************/
 // Write your authentication routes here
